@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define TYPE int
+#define TYPE char
 
 //设计单链表的节点
 typedef struct Node{

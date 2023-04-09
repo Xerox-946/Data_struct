@@ -1,5 +1,5 @@
 #include "list_queue.h"
-#define TYPE int
+#define TYPE char
 
 //创建节点
 Node* create_node(TYPE data){
