@@ -85,13 +85,13 @@ void layer_show(BinTree* tree){
 void z_layer_show(BinTree* tree){
 	ListQueue* queue=create_list_queue();
 	push_list_queue(queue,1);//入编号
-	bool flag=true;
+	int cnt=2;
 	while(!empty_list_queue(queue)){
-		flag=!flag;
+		cnt++;
 		int n=queue->cnt;
 		for(int i=0;i<n;i++){
 				int index=head_list_queue(queue);
-			if(flag==true){
+			if(cnt%3!=0){
 				//入左子树
 				int left=index*2;
 				if(left-1<=tree->cal&&tree->arr[left-1]!='#')push_list_queue(queue,left);
