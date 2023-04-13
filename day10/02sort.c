@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
+#include "list_queue.h"
 
 #define LEN 15
 #define TYPE int
@@ -101,6 +102,96 @@ void shell_sort(TYPE* arr,size_t len){
 	}
 }
 
+//计数排序
+void count_sort(TYPE* arr,size_t len){
+	int min=arr[0],max=arr[0];
+	for(int i=0;i<len;i++){
+		if(max<arr[i])max=arr[i];
+		if(min>arr[i])min=arr[i];
+	}
+	int* hash=calloc(sizeof(TYPE),max-min+1);
+	//标记哈希表
+	for(int i=0;i<len;i++){
+		hash[arr[i]-min]++;
+	}
+
+	for(int i=0,j=0;i<max-min+1;i++){
+		while(hash[i]--){
+			arr[j++]=i+min;
+		}
+	}
+	free(hash);
+}
+
+//cnt桶数 range桶中数值的范围
+void _bucket_sort(TYPE* arr,size_t len,int cnt,int range){
+	//申请桶的内存 bucket桶的首地址 bucket_end桶中最后一个元素的地址
+	TYPE* bucket[cnt],*bucket_end[cnt];
+	for(int i=0;i<cnt;i++){
+		//最坏的情况是所有数据在一个桶中
+		bucket[i]=malloc(sizeof(TYPE)*len);
+		//开始时，起始、末尾指针都指向开头
+		bucket_end[i]=bucket[i];
+	}
+	
+	//把所有数据按照桶的范围值放到对应的桶中
+	for(int i=0;i<len;i++){
+		for(int j=0;j<cnt;j++){
+			if(range*j<=arr[i]&&arr[i]<range*(j+1)){
+				*(bucket_end[j])=arr[i];
+				bucket_end[j]++; //末尾指针往后移动一个元素
+				break;
+			}
+		}
+	}
+	
+	//调用其他的排序算法，对每个桶中的数据排序
+	for(int i=0;i<cnt;i++){
+		//计算桶中的元素个数
+		int size=bucket_end[i]-bucket[i];
+		if(size>1) count_sort(bucket[i],size);
+		memcpy(arr,bucket[i],size*sizeof(TYPE));
+		arr+=size;
+		free(bucket[i]);
+	}
+}
+
+//桶排序
+void bucket_sort(TYPE* arr,size_t len){
+	_bucket_sort(arr,len,4,25);
+}
+
+//基数排序
+void base_sort(TYPE* arr,size_t len){
+	//创建队列
+	ListQueue* queue[10]={};
+	for(int i=0;i<10;i++)	queue[i]=create_list_queue();
+
+	//循环次数由最大值的位数决定
+	int max=arr[0];
+	for(int i=1;i<len;i++){
+		if(arr[i]>max) max=arr[i];
+	}
+
+	for(int k=1;max/k;k*=10){
+		for(int j=0;j<len;j++){
+			//获取每个数的每个位的值
+			push_list_queue(queue[arr[j]/k%10],arr[j]);
+		}
+		int index=0;
+		for(int j=0;j<10;j++){
+			while(!empty_list_queue(queue[j])){
+				arr[index++]=head_list_queue(queue[j]);
+				pop_list_queue(queue[j]);
+			}
+		}
+	}
+
+	for(int i=0;i<10;i++){
+		destroy_list_queue(queue[i]);
+	}
+}
+
 int main(){
 	TYPE arr[LEN]={};
 	srand(time(NULL));
@@ -114,5 +205,8 @@ int main(){
 	//select_sort(arr,LEN);//选择排序
 	//insert_sort(arr,LEN);//插入排序
 	//shell_sort(arr,LEN);//希尔排序
+	//count_sort(arr,LEN);//计数排序
+	//bucket_sort(arr,LEN);//桶排序
+	base_sort(arr,LEN);//基数排序
 	show_arr(arr,LEN);
 }
